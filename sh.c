@@ -26,7 +26,7 @@ Fill in the lines below with the name and email of the group members.
 Replace XX with the contribution of each group member in the development of the work.
 
 Mateus Faria Zaparoli Monteiro mateuszaparoli7@gmail.com 50%
-Name <email@ufmg.br> XX%
+Ricardo Shen <email@ufmg.br> 50%
 
 3. Solutions
 
