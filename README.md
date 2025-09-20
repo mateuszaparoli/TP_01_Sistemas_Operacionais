@@ -11,6 +11,7 @@ Tem tres tipos de comando:
 
 Temos 5 tarefas:  
     1 - Implementar o fork  
+        Implementei mas tem que verificar se fiz direito.
     2 - Implementar o handle_simple_cmd  
     3 - Implementar o handle_redirection  
     4 - Implementar o handle_pipe  

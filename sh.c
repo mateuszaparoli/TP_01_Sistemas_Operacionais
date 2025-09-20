@@ -36,6 +36,7 @@ Briefly describe the solutions implemented for this project and justify their ch
 
 Add the bibliographic references here.
 Slide: Aula 05 - Processos no Unix. Chamadas de sistemas - SlidesArquivo
+Fork functions: https://www.ibm.com/docs/en/zos/2.5.0?topic=functions-fork-create-new-process
 
 */
 
@@ -123,13 +124,13 @@ int fork1(void) {
     The function is supposed to create a new process using the `fork()` system call.
     It should print a message if the fork fails, otherwise return the process ID of the child process (or -1 if the fork fails).
     */
-    int child_pid; 
-    if((child_pid = fork()) == 0){
-        int idChild = getpid();
-        return idChild; 
-    } else {
-        fprintf(stderr, "Fork creation failled\n");
+    int child_pid;
+
+    if((child_pid = fork()) < 0){
+        fprintf(stderr, "Fork creation failed\n");
         return -1;
+    } else {
+        return child_pid; 
     }
     /* END OF TASK 1 */
 }
