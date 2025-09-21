@@ -26,7 +26,7 @@ Fill in the lines below with the name and email of the group members.
 Replace XX with the contribution of each group member in the development of the work.
 
 Mateus Faria Zaparoli Monteiro mateuszaparoli7@gmail.com 50%
-Ricardo Shen <email@ufmg.br> 50%
+Ricardo Shen ricardo.shen@dcc.ufmg.br 50%
 
 3. Solutions
 
@@ -137,19 +137,53 @@ int fork1(void) {
 
 void handle_simple_cmd(struct execcmd *ecmd) {
     /* Task 2: Implement the code below to execute simple commands. */
-    fprintf(stderr, "exec not implemented\n");
+    if(fork1() == 0) {
+        execvp(ecmd->argv[0], ecmd->argv);
+        fprintf(stderr, "execvp failed\n");
+        exit(-1);
+    } else {
+        wait(NULL);
+    }
     /* END OF TASK 2 */
 }
 
 void handle_redirection(struct redircmd *rcmd) {
     /* Task 3: Implement the code below to handle input/output redirection. */
-    fprintf(stderr, "redir not implemented\n");
+    int file_fd = open(rcmd->file, rcmd->mode, 0644);
+    if (file_fd < 0) {
+        fprintf(stderr, "open failed\n");
+        exit(-1);
+    }
+    dup2(file_fd, rcmd->fd);
+    close(file_fd);
     /* END OF TASK 3 */
 }
 
 void handle_pipe(struct pipecmd *pcmd, int *p, int r) {
     /* Task 4: Implement the code below to handle pipes. */
-    fprintf(stderr, "pipe not implemented\n");
+    if (pipe(p) < 0) {
+        fprintf(stderr, "pipe failed\n");
+        exit(-1);
+    }
+    
+    if (fork1() == 0) {
+        close(p[0]);
+        dup2(p[1], 1);
+        close(p[1]);
+        runcmd(pcmd->left);
+    }
+    
+    if (fork1() == 0) {
+        close(p[1]);
+        dup2(p[0], 0);
+        close(p[0]);
+        runcmd(pcmd->right);
+    }
+    
+    close(p[0]);
+    close(p[1]);
+    wait(NULL);
+    wait(NULL);
     /* END OF TASK 4 */
 }
 
@@ -171,13 +205,16 @@ int main(void) {
     while (getcmd(buf, sizeof(buf)) >= 0) {
         /* Task 5: Explain the purpose of the if statement below and correct the error message.
         Why is the current error message incorrect? Justify the new message. */
-        /* Answer:
-
+        /* Answer: 
+            A condição if abaixo lida com o comando cd, usado para trocar diretório.
+            Caso a entrada começa com "cd", chdir() é executado, trocando o diretório em uso.
+            Desse modo, a mensagem "process does not exist" está errada, pois chdir() está relacionada
+            com diretórios e não processos.
          */
         if (buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' ') {
             buf[strlen(buf) - 1] = 0;
             if (chdir(buf + 3) < 0)
-                fprintf(stderr, "process does not exist\n");
+                fprintf(stderr, "directory does not exist\n");
             continue;
         }
         /* END OF TASK 5 */
@@ -188,7 +225,7 @@ int main(void) {
     }
     exit(0);
 }
-
+ 
 /****************************************************************
  * Helper functions for creating command structures
  ***************************************************************/
