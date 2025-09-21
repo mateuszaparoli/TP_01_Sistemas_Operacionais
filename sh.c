@@ -26,18 +26,47 @@ Fill in the lines below with the name and email of the group members.
 Replace XX with the contribution of each group member in the development of the work.
 
 Mateus Faria Zaparoli Monteiro mateuszaparoli7@gmail.com 50%
-Ricardo Shen ricardo.shen@dcc.ufmg.br 50%
+Ricardo Shen <email@ufmg.br> 50%
 
 3. Solutions
 
 Briefly describe the solutions implemented for this project and justify their choices.
+
+Task 1 Solution:
+    Here, we implemented a simple for command, if the fork fails it returns a number less than 0,  
+    so we print an error message and return -1, as it was asked in the task.  
+    Otherwise, we return the child process id as it was asked on the task too.  
+
+Task 2 Solution:
+    Here, to execute simple commands, we choose to use the execvp function,
+    wich change what the current process do so that it executes the command passed as parameter.
+    As it mention in the execvp manual, if it returns, it means that an error ocurred,
+    and if that happens we print an error message and exit with -1 as it was asked in the task.
+
+Task 3 Solution:
+    Here, we have to change the IO of the process to complete the task.
+    So, first of all, we open the file passed as parameter using the mode that was given,
+    than if the execution fails we print an error message and exit with -1.
+    If not, we close the file descriptor that we want to redirect,
+    after that we duplicate the file descriptor so that it takes the place of the one we just closed.
+    Doing that, we do not use the input/output that was there before, but the one we opened.
+    Finally, if the duplication fails we print an error message and exit with -1,
+    otherwise we close the file descriptor that we opened and the task is complete.
+
+Task 4 Solution:
+
+Task 5 Solution:
+
 
 4. Bibliographic references
 
 Add the bibliographic references here.
 Slide: Aula 05 - Processos no Unix. Chamadas de sistemas - SlidesArquivo
 Fork functions: https://www.ibm.com/docs/en/zos/2.5.0?topic=functions-fork-create-new-process
-
+Execvp manual: https://www.ionos.com/pt-br/digitalguide/sites-de-internet/desenvolvimento-web/execvp/
+Exec manual: exec(3)-Library Functions Manual
+Open command: https://br-c.org/doku.php?id=open
+Dup command: https://man7.org/linux/man-pages/man2/dup.2.html
 */
 
 /****************************************************************
@@ -137,26 +166,32 @@ int fork1(void) {
 
 void handle_simple_cmd(struct execcmd *ecmd) {
     /* Task 2: Implement the code below to execute simple commands. */
-    if(fork1() == 0) {
-        execvp(ecmd->argv[0], ecmd->argv);
-        fprintf(stderr, "execvp failed\n");
-        exit(-1);
-    } else {
-        wait(NULL);
-    }
+    execvp(ecmd->argv[0], ecmd->argv);
+    fprintf(stderr, "Handle command: %s failed \n", ecmd->argv[0]);
+    exit(-1);
     /* END OF TASK 2 */
 }
 
 void handle_redirection(struct redircmd *rcmd) {
-    /* Task 3: Implement the code below to handle input/output redirection. */
-    int file_fd = open(rcmd->file, rcmd->mode, 0644);
-    if (file_fd < 0) {
-        fprintf(stderr, "open failed\n");
+    /* Task 3: Implement the code below to handle input/output redirection. */ 
+    int fileDescriptor;
+
+    fileDescriptor = open(rcmd->file, rcmd->mode, 0644);
+
+    if (fileDescriptor < 0) {
+        fprintf(stderr, "Error opening file: %s\n", rcmd->file);
         exit(-1);
     }
-    dup2(file_fd, rcmd->fd);
-    close(file_fd);
-    /* END OF TASK 3 */
+
+    close(rcmd->fd);
+
+    if (dup(fileDescriptor) < 0) {
+        fprintf(stderr, "Error duplicating file descriptor\n");
+        exit(-1);
+    }
+
+    close(fileDescriptor);
+    /* END OF TASK 3 */ 
 }
 
 void handle_pipe(struct pipecmd *pcmd, int *p, int r) {
